@@ -10,11 +10,24 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" />
       <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
       <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+      <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+      <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
       <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
       <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\AdmSchoolApp.Application\AdmSchoolApp.Application.csproj" />
+      <ProjectReference Include="..\AdmSchoolApp.Domain\AdmSchoolApp.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Middleware\" />
     </ItemGroup>
 
 </Project>

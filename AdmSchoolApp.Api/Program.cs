@@ -3,11 +3,13 @@ using AdmSchoolApp.Application.Utils;
 using AdmSchoolApp.Domain.Models;
 using AdmSchoolApp.Endpoints.V1;
 using AdmSchoolApp.Extensions;
+using AdmSchoolApp.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -15,6 +17,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
     .Enrich.FromLogContext()
     .WriteTo.Console(
+        theme: AnsiConsoleTheme.Code,
         outputTemplate: Util.SerilogTemplate
     )
     .WriteTo.File(
@@ -75,6 +78,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 builder.Services.AddAuthorization();
+
+var cs = builder.Configuration.GetConnectionString("Default")
+         ?? throw new InvalidOperationException("ConnectionStrings:Default is missing.");
+
+builder.Services.AddInfrastructureServices(cs);
 
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks()

@@ -44,12 +44,15 @@ public class BaseError
         Errors = errors;
         Code = code;
     }
-
+    
     public void AddError(string error)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(error);
         Errors = Errors.Append(error).ToArray();
     }
+    
+    [JsonPropertyName("traceId")]
+    public Guid TraceId { get; } = Guid.NewGuid();
     
     [JsonPropertyName("errors")]
     public string[] Errors { get; set; } = [];
@@ -63,9 +66,13 @@ public sealed class InternalCodesJsonConverter : JsonConverter<InternalCodes>
     private static Dictionary<InternalCodes, string>? _enumToCode;
     private static Dictionary<string, InternalCodes>? _codeToEnum;
 
-    public static void AssertConfigured()
+    public InternalCodesJsonConverter()
     {
-        // monta e valida; lança InvalidOperationException aqui se algo errado
+        AssertConfigured();
+    }
+
+    private static void AssertConfigured()
+    {
         var type = typeof(InternalCodes);
         var enumToCode = new Dictionary<InternalCodes, string>();
         var codeToEnum = new Dictionary<string, InternalCodes>(StringComparer.Ordinal);

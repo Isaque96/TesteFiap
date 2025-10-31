@@ -14,15 +14,16 @@ public static class ErrorHandlingEndpoints
             var isProduction = !string.Equals(
                 http.RequestServices.GetRequiredService<IHostEnvironment>().EnvironmentName,
                 Environments.Development,
-                StringComparison.OrdinalIgnoreCase);
+                StringComparison.OrdinalIgnoreCase
+            );
 
             var exception = http.Features.Get<IExceptionHandlerFeature>()?.Error;
 
             var error = new BaseResponse<string>
             {
                 Message = "Ocorreu um erro inesperado",
-                Data = isProduction ? null : exception?.ToString(),
-                Error = isProduction || exception is null
+                Data = isProduction ? null : exception.ToString(),
+                Error = isProduction
                     ? null
                     : new BaseError(
                         exception.GetAllExceptions().Select(e => e.Message).ToArray(),
@@ -30,7 +31,7 @@ public static class ErrorHandlingEndpoints
                       )
             };
 
-            Serilog.Log.Error(exception, "Ocorreu um erro inesperado!");
+            Serilog.Log.Error(exception, "[{Id}] Erro não tratado", error.Error.TraceId);
 
             return Results.InternalServerError(error);
         });

@@ -3,8 +3,8 @@ dotnet ef dbcontext scaffold Name=ConnectionStrings:Default Microsoft.EntityFram
 --project ./AdmSchoolApp.Infrastructure/AdmSchoolApp.Infrastructure.csproj \
 --startup-project ./AdmSchoolApp.Api/AdmSchoolApp.Api.csproj \
 --context AdmSchoolDbContext \
---context-dir "." \
---output-dir "TempModels" \
+--context-dir "./Contexts" \
+--output-dir "../AdmSchoolApp.Domain/Entities" \
 --schema adm \
 --force \
 --data-annotations

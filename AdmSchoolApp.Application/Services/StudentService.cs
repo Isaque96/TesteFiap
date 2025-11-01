@@ -1,4 +1,6 @@
-﻿using AdmSchoolApp.Application.Utils;
+﻿using System.Text;
+using AdmSchoolApp.Application.Utils;
+using AdmSchoolApp.Application.Validators;
 using AdmSchoolApp.Domain.Entities;
 using AdmSchoolApp.Domain.Interfaces;
 using AdmSchoolApp.Domain.Specifications;
@@ -20,11 +22,16 @@ public class StudentService(IRepository<Student> repository, IValidator<Student>
         // Hash da senha se fornecida
         if (entity.PasswordHash is { Length: > 0 })
         {
-            var password = System.Text.Encoding.UTF8.GetString(entity.PasswordHash);
+            var password = Encoding.UTF8.GetString(entity.PasswordHash);
+            var passwordValidator = new PasswordValidator();
+            var passValResult = await passwordValidator.ValidateAsync(password);
+            if (!passValResult.IsValid)
+                return (false, passValResult, null);
             entity.PasswordHash = PasswordHasher.HashPassword(password);
         }
 
         var addedEntity = await Repository.AddAsync(entity);
+        await Repository.SaveChangesAsync();
         return (true, validationResult, addedEntity);
     }
     

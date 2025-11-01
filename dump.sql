@@ -270,3 +270,13 @@ BEGIN
        AND ur.RoleId = i.RoleId;
 END
 ');
+
+/********************************************************************************************
+  4) Seed
+     - Default USER
+     - Idempotente: drop + create.
+********************************************************************************************/
+
+INSERT INTO [adm].[Role](Name, Description) VALUES ('User', 'Perfil básico de usuário'), ('Admin', 'Perfil de acesso administrador');
+INSERT INTO [adm].[User](Name, Email, PasswordHash, IsActive) VALUES ('Isaque Schuwarte', 'isaque.schuwarte@fiap.com.br', '$2a$11$gh8aRT44h9TJf2cZo24sg.OnOiN25nObwvGicoxv.gBSrcl026Hpu', 1);
+INSERT INTO [adm].[UserRole](UserId, RoleId) VALUES ((SELECT Id FROM [adm].[User] WHERE Email = 'isaque.schuwarte@fiap.com.br'), (SELECT Id FROM [adm].[Role] WHERE Name = 'Admin'));

@@ -15,8 +15,7 @@ public static class ClassEndpoints
     public static IEndpointRouteBuilder MapClassEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/classes")
-            .WithTags("Classes")
-            .RequireAuthorization();
+            .WithTags("Classes");
 
         group.MapGet("/", GetAllClassesAsync)
             .WithName("GetAllClasses")

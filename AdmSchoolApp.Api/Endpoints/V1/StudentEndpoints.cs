@@ -16,8 +16,7 @@ public static class StudentEndpoints
     public static IEndpointRouteBuilder MapStudentEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/students")
-            .WithTags("Students")
-            .RequireAuthorization();
+            .WithTags("Students");
 
         group.MapGet("/", GetAllStudentsAsync)
             .WithName("GetAllStudents")

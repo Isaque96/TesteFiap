@@ -1,4 +1,6 @@
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AdmSchoolApp.Application;
 using AdmSchoolApp.Application.Utils;
 using AdmSchoolApp.Domain.Models;
@@ -7,12 +9,10 @@ using AdmSchoolApp.Extensions;
 using AdmSchoolApp.Infrastructure;
 using AdmSchoolApp.Infrastructure.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
-using AppJsonContext = AdmSchoolApp.Domain.Models.Responses.AppJsonContext;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -31,24 +31,21 @@ Log.Logger = new LoggerConfiguration()
     )
     .CreateLogger();
 
-var builder = WebApplication.CreateSlimBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, cfg) =>
 {
     cfg.ReadFrom.Configuration(ctx.Configuration)
-        .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
         .Enrich.FromLogContext()
         .WriteTo.Console(outputTemplate: Util.SerilogTemplate);
 });
 
 builder.Services.ConfigureHttpJsonOptions(o =>
 {
-    o.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonContext.Default);
+    o.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    o.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     o.SerializerOptions.Converters.Add(new InternalCodesJsonConverter());
-});
-builder.Services.Configure<RouteOptions>(options =>
-{
-    options.SetParameterPolicy<RegexInlineRouteConstraint>("regex");
 });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -61,16 +58,13 @@ builder.Services.AddCors(o => o.AddPolicy("Front",
         .AllowCredentials()
 ));
 
-var jwtSettings = builder.Configuration
-                      .GetSection(JwtSettings.SectionName)
-                      .Get<JwtSettings>()
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
+var jwtSettings = builder.Configuration.GetSection(JwtSettings.SectionName)
                   ?? throw new InvalidOperationException($"Missing '{JwtSettings.SectionName}' configuration section.");
 
 // Validações
-if (string.IsNullOrWhiteSpace(jwtSettings.SecretKey) || jwtSettings.SecretKey.Length < 32)
+if (string.IsNullOrWhiteSpace(jwtSettings["secretKey"]) || jwtSettings["secretKey"]!.Length < 32)
     throw new InvalidOperationException("JWT SecretKey must be at least 32 characters long.");
-
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -83,9 +77,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+            ValidIssuer = jwtSettings["issuer"],
+            ValidAudience = jwtSettings["audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["secretKey"]!)),
             ClockSkew = TimeSpan.Zero
         };
     });

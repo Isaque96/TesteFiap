@@ -17,8 +17,7 @@ public static class UserEndpoints
     public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/users")
-            .WithTags("Users")
-            .RequireAuthorization();
+            .WithTags("Users");
 
         group.MapGet("/", GetAllUsersAsync)
             .WithName("GetAllUsers")
@@ -142,12 +141,10 @@ public static class UserEndpoints
     {
         // Verificar se email já existe
         if (await service.EmailExistsAsync(request.Email))
-        {
             return ApiResponseExtensions.BadRequest(
                 ["Email já cadastrado"],
                 InternalCodes.EmailAlreadyExists
             );
-        }
 
         var user = new User
         {

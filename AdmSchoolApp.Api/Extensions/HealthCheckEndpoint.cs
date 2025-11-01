@@ -1,12 +1,18 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 using AdmSchoolApp.Domain.Models.Responses;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using AppJsonContext = AdmSchoolApp.Domain.Models.Responses.AppJsonContext;
 
 namespace AdmSchoolApp.Extensions;
 
 public static class HealthCheckEndpoints
 {
+    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+    
     public static IEndpointRouteBuilder MapAppHealthChecks(this IEndpointRouteBuilder app)
     {
         app.MapHealthChecks("/health");
@@ -29,9 +35,7 @@ public static class HealthCheckEndpoints
                     }).ToList()
                 };
 
-                await ctx.Response.WriteAsync(
-                    JsonSerializer.Serialize(dto, AppJsonContext.Default.HealthReportResult)
-                );
+                await ctx.Response.WriteAsJsonAsync(dto, Options);
             }
         });
 

@@ -13,8 +13,7 @@ public static class EnrollmentEndpoints
     public static IEndpointRouteBuilder MapEnrollmentEndpoints(this IEndpointRouteBuilder routes)
     {
         var group = routes.MapGroup("/enrollments")
-            .WithTags("Enrollments")
-            .RequireAuthorization();
+            .WithTags("Enrollments");
 
         group.MapGet("/student/{studentId:guid}", GetEnrollmentsByStudentAsync)
             .WithName("GetEnrollmentsByStudent")
@@ -114,12 +113,10 @@ public static class EnrollmentEndpoints
 
         // REQUISITO 5: Verificar se aluno já está matriculado
         if (await service.IsStudentEnrolledInClassAsync(request.StudentId, request.ClassId))
-        {
             return ApiResponseExtensions.BadRequest(
                 ["Aluno já está matriculado nesta turma"],
                 InternalCodes.StudentAlreadyEnrolled
             );
-        }
 
         var enrollment = new Enrollment
         {

@@ -31,22 +31,17 @@ public static class ApiResponseExtensions
     public static IResult BadRequest(ValidationResult validationResult)
     {
         var errors = validationResult.Errors
-            .Select(e => $"{e.PropertyName}: {e.ErrorMessage}")
+            .Select(e => string.IsNullOrWhiteSpace(e.PropertyName) ?
+                e.ErrorMessage :
+                $"{e.PropertyName}: {e.ErrorMessage}"
+            )
             .ToArray();
         
         return BadRequest(errors);
     }
 
-    public static IResult Unauthorized(string message = "Não autorizado")
+    public static IResult Unauthorized()
     {
-        var response = new BaseResponse<object>(
-            message: message,
-            data: null,
-            error: new BaseError(
-                ["Credenciais inválidas ou token expirado"],
-                InternalCodes.UnauthorizedRequest
-            )
-        );
         return Results.Unauthorized();
     }
 

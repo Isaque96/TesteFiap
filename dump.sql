@@ -12,7 +12,7 @@ GO
 /********************************************************************************************
   2) Domain Tables
      - Student, Class, Enrollment
-     - User, Role, UserRole (Identity/Authorization)
+     - User, Role, UserRole, RefreshToken (Identity/Authorization)
      - All tables include CreatedAt and UpdatedAt (UTC). UpdatedAt is kept by AFTER UPDATE triggers.
 ********************************************************************************************/
 
@@ -127,6 +127,32 @@ BEGIN
         CONSTRAINT FK_UserRole_User FOREIGN KEY (UserId) REFERENCES adm.[User](Id) ON DELETE CASCADE,
         CONSTRAINT FK_UserRole_Role FOREIGN KEY (RoleId) REFERENCES adm.Role(Id) ON DELETE CASCADE
     );
+END
+
+-- RefreshToken
+IF OBJECT_ID('adm.RefreshToken', 'U') IS NULL
+BEGIN
+CREATE TABLE adm.RefreshToken (
+                                  Id UNIQUEIDENTIFIER NOT NULL DEFAULT NEWSEQUENTIALID(),
+                                  UserId UNIQUEIDENTIFIER NOT NULL,
+                                  Token NVARCHAR(512) NOT NULL,
+                                  ExpiresAt DATETIME2(0) NOT NULL,
+                                  CreatedAt DATETIME2(0) NOT NULL DEFAULT SYSUTCDATETIME(),
+                                  IsRevoked BIT NOT NULL DEFAULT 0,
+                                  RevokedAt DATETIME2(0) NULL,
+                                  CONSTRAINT PK_RefreshToken PRIMARY KEY (Id),
+                                  CONSTRAINT FK_RefreshToken_User FOREIGN KEY (UserId) REFERENCES adm.[User](Id) ON DELETE CASCADE
+);
+END
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_RefreshToken_Token' AND object_id = OBJECT_ID('adm.RefreshToken'))
+BEGIN
+CREATE UNIQUE INDEX UX_RefreshToken_Token ON adm.RefreshToken(Token);
+END
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_RefreshToken_UserId' AND object_id = OBJECT_ID('adm.RefreshToken'))
+BEGIN
+CREATE INDEX IX_RefreshToken_UserId ON adm.RefreshToken(UserId);
 END
 
 /********************************************************************************************

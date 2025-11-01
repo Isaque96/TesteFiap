@@ -1,4 +1,5 @@
 using System.Text;
+using AdmSchoolApp.Application;
 using AdmSchoolApp.Application.Utils;
 using AdmSchoolApp.Domain.Models;
 using AdmSchoolApp.Endpoints.V1;
@@ -10,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
+using AppJsonContext = AdmSchoolApp.Domain.Models.Responses.AppJsonContext;
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
@@ -83,6 +85,7 @@ var cs = builder.Configuration.GetConnectionString("Default")
          ?? throw new InvalidOperationException("ConnectionStrings:Default is missing.");
 
 builder.Services.AddInfrastructureServices(cs);
+builder.Services.AddApplicationServices();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks()

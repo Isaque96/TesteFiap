@@ -1,4 +1,5 @@
 ﻿using AdmSchoolApp.Domain.Interfaces;
+using AdmSchoolApp.Domain.Models;
 using AdmSchoolApp.Infrastructure.Contexts;
 using AdmSchoolApp.Infrastructure.Specifications;
 using Microsoft.EntityFrameworkCore;
@@ -14,12 +15,12 @@ public class BaseRepository<T>(AdmSchoolDbContext context) : IRepository<T>
     // Queries
     public virtual async Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await DbSet.FindAsync(new object[] { id }, ct);
+        return await DbSet.FindAsync([id], ct);
     }
 
     public virtual async Task<T?> GetByIdAsync(int id, CancellationToken ct = default)
     {
-        return await DbSet.FindAsync(new object[] { id }, ct);
+        return await DbSet.FindAsync([id], ct);
     }
 
     public virtual async Task<IReadOnlyList<T>> GetAllAsync(CancellationToken ct = default)
@@ -47,11 +48,12 @@ public class BaseRepository<T>(AdmSchoolDbContext context) : IRepository<T>
         return await ApplySpecification(spec).AnyAsync(ct);
     }
 
-    public virtual async Task<(IReadOnlyList<T> Items, int TotalCount)> GetPagedAsync(
+    public virtual async Task<BasePagination<T>> GetPagedAsync(
         int pageNumber,
         int pageSize,
         ISpecification<T>? spec = null,
-        CancellationToken ct = default)
+        CancellationToken ct = default
+    )
     {
         var query = spec != null ? ApplySpecification(spec) : DbSet.AsNoTracking();
 
@@ -62,7 +64,7 @@ public class BaseRepository<T>(AdmSchoolDbContext context) : IRepository<T>
             .Take(pageSize)
             .ToListAsync(ct);
 
-        return (items, totalCount);
+        return new BasePagination<T>(items, pageNumber, pageSize, totalCount);
     }
 
     // Commands

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace AdmSchoolApp.Infrastructure;
+namespace AdmSchoolApp.Domain.Entities;
 
 [Table("Student", Schema = "adm")]
 [Index("Cpf", Name = "UX_Student_Cpf", IsUnique = true)]

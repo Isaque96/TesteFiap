@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace AdmSchoolApp.Infrastructure;
+namespace AdmSchoolApp.Domain.Entities;
 
 [Table("User", Schema = "adm")]
 [Index("Email", Name = "UX_User_Email", IsUnique = true)]
@@ -29,6 +27,9 @@ public partial class User
 
     [Precision(0)]
     public DateTime UpdatedAt { get; set; }
+
+    [InverseProperty("User")]
+    public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
     [InverseProperty("User")]
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();

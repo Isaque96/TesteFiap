@@ -1,4 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using AdmSchoolApp.Domain.Entities;
+using AdmSchoolApp.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace AdmSchoolApp.Infrastructure.Contexts;
 
@@ -16,6 +20,8 @@ public partial class AdmSchoolDbContext : DbContext
     public virtual DbSet<Class> Classes { get; set; }
 
     public virtual DbSet<Enrollment> Enrollments { get; set; }
+
+    public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
 
@@ -50,6 +56,14 @@ public partial class AdmSchoolDbContext : DbContext
             entity.HasOne(d => d.Class).WithMany(p => p.Enrollments).HasConstraintName("FK_Enrollment_Class");
 
             entity.HasOne(d => d.Student).WithMany(p => p.Enrollments).HasConstraintName("FK_Enrollment_Student");
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.Property(e => e.Id).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
+
+            entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens).HasConstraintName("FK_RefreshToken_User");
         });
 
         modelBuilder.Entity<Role>(entity =>

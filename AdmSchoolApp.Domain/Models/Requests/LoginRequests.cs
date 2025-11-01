@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AdmSchoolApp.Domain.Models;
+namespace AdmSchoolApp.Domain.Models.Requests;
 
-public class LoginDto
+public class LoginRequests
 {
     [JsonPropertyName("login")]
     public string? Login { get; set; }

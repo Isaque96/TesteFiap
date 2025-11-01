@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace AdmSchoolApp.Infrastructure;
+namespace AdmSchoolApp.Domain.Entities;
 
 [Table("Enrollment", Schema = "adm")]
 [Index("StudentId", "ClassId", Name = "UX_Enrollment_Student_Class", IsUnique = true)]

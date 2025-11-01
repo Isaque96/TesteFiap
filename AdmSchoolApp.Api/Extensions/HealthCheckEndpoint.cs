@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
-using AdmSchoolApp.Domain.Models;
+using AdmSchoolApp.Domain.Models.Responses;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using AppJsonContext = AdmSchoolApp.Domain.Models.Responses.AppJsonContext;
 
 namespace AdmSchoolApp.Extensions;
 
@@ -16,7 +17,7 @@ public static class HealthCheckEndpoints
             {
                 ctx.Response.ContentType = "application/json";
 
-                var dto = new HealthReportDto
+                var dto = new HealthReportResult
                 {
                     Status = report.Status.ToString(),
                     Results = report.Entries.Select(e => new HealthReportEntryDto
@@ -29,7 +30,7 @@ public static class HealthCheckEndpoints
                 };
 
                 await ctx.Response.WriteAsync(
-                    JsonSerializer.Serialize(dto, AppJsonContext.Default.HealthReportDto)
+                    JsonSerializer.Serialize(dto, AppJsonContext.Default.HealthReportResult)
                 );
             }
         });

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore;
 
-namespace AdmSchoolApp.Infrastructure;
+namespace AdmSchoolApp.Domain.Entities;
 
 [Table("Class", Schema = "adm")]
 public partial class Class

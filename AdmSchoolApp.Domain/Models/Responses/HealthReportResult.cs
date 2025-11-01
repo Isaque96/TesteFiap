@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace AdmSchoolApp.Domain.Models;
+namespace AdmSchoolApp.Domain.Models.Responses;
 
-public sealed class HealthReportDto
+public sealed class HealthReportResult
 {
     public string? Status { get; set; } = null;
     public List<HealthReportEntryDto> Results { get; set; } = [];
@@ -16,6 +16,6 @@ public sealed class HealthReportEntryDto
     public string? Error { get; set; }
 }
 
-[JsonSerializable(typeof(HealthReportDto))]
+[JsonSerializable(typeof(HealthReportResult))]
 [JsonSourceGenerationOptions(WriteIndented = false)]
 public partial class AppJsonContext : JsonSerializerContext { }

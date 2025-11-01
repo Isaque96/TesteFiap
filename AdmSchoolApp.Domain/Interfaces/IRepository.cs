@@ -1,4 +1,6 @@
-﻿namespace AdmSchoolApp.Domain.Interfaces;
+﻿using AdmSchoolApp.Domain.Models;
+
+namespace AdmSchoolApp.Domain.Interfaces;
 
 public interface IRepository<T> where T : class
 {
@@ -12,11 +14,12 @@ public interface IRepository<T> where T : class
     Task<bool> AnyAsync(ISpecification<T> spec, CancellationToken ct = default);
 
     // Paginação
-    Task<(IReadOnlyList<T> Items, int TotalCount)> GetPagedAsync(
+    Task<BasePagination<T>> GetPagedAsync(
         int pageNumber,
         int pageSize,
         ISpecification<T>? spec = null,
-        CancellationToken ct = default);
+        CancellationToken ct = default
+    );
 
     // Commands
     Task<T> AddAsync(T entity, CancellationToken ct = default);

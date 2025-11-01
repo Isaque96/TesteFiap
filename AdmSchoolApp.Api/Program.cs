@@ -76,7 +76,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.SaveToken = true;
-        options.RequireHttpsMetadata = false; // Em produção: true
+        options.RequireHttpsMetadata = builder.Environment.IsProduction();
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -136,6 +136,10 @@ app.MapAppHealthChecks();
 var api = app.MapGroup("/api").RequireAuthorization();
 
 var v1 = api.MapGroup("/v1").WithTags("v1");
+v1.MapUserEndpoints();
 v1.MapAuthEndpoints();
+v1.MapStudentEndpoints();
+v1.MapClassEndpoints();
+v1.MapEnrollmentEndpoints();
 
 await app.RunAsync();

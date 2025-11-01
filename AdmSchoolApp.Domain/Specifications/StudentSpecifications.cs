@@ -2,6 +2,14 @@
 
 namespace AdmSchoolApp.Domain.Specifications;
 
+public class EmptyStudentSpecification : BaseSpecification<Student>
+{
+    public EmptyStudentSpecification()
+    {
+        ApplyOrderBy(s => s.Name);
+    }
+}
+
 public class StudentByCpfSpecification(string cpf) : BaseSpecification<Student>(s => s.Cpf == cpf);
 
 public class StudentByEmailSpecification(string email) : BaseSpecification<Student>(s => s.Email == email);

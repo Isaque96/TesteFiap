@@ -2,6 +2,14 @@
 
 namespace AdmSchoolApp.Domain.Specifications;
 
+public class EmptyClassSpecification : BaseSpecification<Class>
+{
+    public EmptyClassSpecification()
+    {
+        ApplyOrderBy(c => c.Name);
+    }
+}
+
 public class ClassByNameSpecification(string name) : BaseSpecification<Class>(c => c.Name == name);
 
 public class ClassesPaginatedSpecification : BaseSpecification<Class>

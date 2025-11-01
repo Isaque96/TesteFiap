@@ -3,7 +3,8 @@ using AdmSchoolApp.Domain.Entities;
 using AdmSchoolApp.Domain.Enums;
 using AdmSchoolApp.Domain.Models.Requests;
 using AdmSchoolApp.Application.Services;
-using AdmSchoolApp.Domain.Specifications;
+using AdmSchoolApp.Domain.Models;
+using AdmSchoolApp.Domain.Models.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AdmSchoolApp.Endpoints.V1;
@@ -20,23 +21,27 @@ public static class StudentEndpoints
 
         group.MapGet("/", GetAllStudentsAsync)
             .WithName("GetAllStudents")
-            .WithSummary("Lista todos os alunos paginados");
+            .WithSummary("REQUISITO 1: Lista todos os alunos paginados e ordenados alfabeticamente");
 
         group.MapGet("/{id:guid}", GetStudentByIdAsync)
             .WithName("GetStudentById")
             .WithSummary("Busca aluno por ID");
 
+        group.MapGet("/{id:guid}/enrollments", GetStudentWithEnrollmentsAsync)
+            .WithName("GetStudentWithEnrollments")
+            .WithSummary("Busca aluno com suas matrículas");
+
         group.MapGet("/search", SearchStudentsByNameAsync)
             .WithName("SearchStudentsByName")
-            .WithSummary("Busca alunos por nome");
+            .WithSummary("REQUISITO 9: Busca alunos por nome");
 
         group.MapGet("/cpf/{cpf}", GetStudentByCpfAsync)
             .WithName("GetStudentByCpf")
-            .WithSummary("Busca aluno por CPF");
+            .WithSummary("REQUISITO 9: Busca aluno por CPF");
 
         group.MapPost("/", CreateStudentAsync)
             .WithName("CreateStudent")
-            .WithSummary("Cria novo aluno");
+            .WithSummary("Cria novo aluno com validações (REQUISITOS 3, 4, 6, 7, 8)");
 
         group.MapPut("/{id:guid}", UpdateStudentAsync)
             .WithName("UpdateStudent")
@@ -55,10 +60,18 @@ public static class StudentEndpoints
         [FromQuery] int pageSize = 10
     )
     {
-        var spec = new StudentsPaginatedSpecification(pageNumber, pageSize);
-        var students = await service.FindAsync(spec);
+        var (items, totalCount) = await service.GetPaginatedAsync(pageNumber, pageSize);
         
-        return ApiResponseExtensions.Success(students, "Alunos listados com sucesso");
+        var response = new BasePagination<StudentResponse>(
+            items.Select(s => new StudentResponse(
+                s.Id, s.Name, s.BirthDate, s.Cpf, s.Email, s.CreatedAt, s.UpdatedAt
+            )).ToList(),
+            pageNumber,
+            pageSize,
+            totalCount
+        );
+        
+        return ApiResponseExtensions.Success(response, "Alunos listados com sucesso");
     }
 
     private static async Task<IResult> GetStudentByIdAsync(
@@ -68,9 +81,41 @@ public static class StudentEndpoints
     {
         var student = await service.GetByIdAsync(id);
         
-        return student == null ?
-            ApiResponseExtensions.NotFound(AlunoNaoEncontrado) :
-            ApiResponseExtensions.Success(student);
+        if (student == null)
+            return ApiResponseExtensions.NotFound("Aluno não encontrado");
+
+        var response = new StudentResponse(
+            student.Id, student.Name, student.BirthDate, 
+            student.Cpf, student.Email, student.CreatedAt, student.UpdatedAt
+        );
+
+        return ApiResponseExtensions.Success(response);
+    }
+
+    private static async Task<IResult> GetStudentWithEnrollmentsAsync(
+        Guid id,
+        [FromServices] StudentService service
+    )
+    {
+        var student = await service.GetWithEnrollmentsAsync(id);
+        
+        if (student == null)
+            return ApiResponseExtensions.NotFound(AlunoNaoEncontrado);
+
+        var response = new StudentWithEnrollmentsResponse(
+            student.Id,
+            student.Name,
+            student.BirthDate,
+            student.Cpf,
+            student.Email,
+            student.CreatedAt,
+            student.UpdatedAt,
+            student.Enrollments.Select(e => new EnrollmentSummary(
+                e.Id, e.ClassId, e.Class.Name, e.CreatedAt
+            )).ToList()
+        );
+
+        return ApiResponseExtensions.Success(response);
     }
 
     private static async Task<IResult> SearchStudentsByNameAsync(
@@ -82,7 +127,12 @@ public static class StudentEndpoints
             return ApiResponseExtensions.BadRequest(["Nome é obrigatório para busca"]);
 
         var students = await service.SearchByNameAsync(name);
-        return ApiResponseExtensions.Success(students, "Busca realizada com sucesso");
+        
+        var response = students.Select(s => new StudentResponse(
+            s.Id, s.Name, s.BirthDate, s.Cpf, s.Email, s.CreatedAt, s.UpdatedAt
+        )).ToList();
+
+        return ApiResponseExtensions.Success(response, "Busca realizada com sucesso");
     }
 
     private static async Task<IResult> GetStudentByCpfAsync(
@@ -92,9 +142,15 @@ public static class StudentEndpoints
     {
         var student = await service.GetByCpfAsync(cpf);
         
-        return student == null ?
-            ApiResponseExtensions.NotFound(AlunoNaoEncontrado) :
-            ApiResponseExtensions.Success(student);
+        if (student == null)
+            return ApiResponseExtensions.NotFound(AlunoNaoEncontrado);
+
+        var response = new StudentResponse(
+            student.Id, student.Name, student.BirthDate, 
+            student.Cpf, student.Email, student.CreatedAt, student.UpdatedAt
+        );
+
+        return ApiResponseExtensions.Success(response);
     }
 
     private static async Task<IResult> CreateStudentAsync(
@@ -136,16 +192,21 @@ public static class StudentEndpoints
         if (!isValid)
             return ApiResponseExtensions.BadRequest(validationResult);
 
+        var response = new StudentResponse(
+            entity!.Id, entity.Name, entity.BirthDate, 
+            entity.Cpf, entity.Email, entity.CreatedAt, entity.UpdatedAt
+        );
+
         return ApiResponseExtensions.Created(
-            entity,
-            $"/api/v1/students/{entity!.Id}",
+            response,
+            $"/api/v1/students/{entity.Id}",
             "Aluno criado com sucesso"
         );
     }
 
     private static async Task<IResult> UpdateStudentAsync(
         Guid id,
-        [FromBody] CreateStudentRequest request,
+        [FromBody] UpdateStudentRequest request,
         [FromServices] StudentService service
     )
     {
@@ -156,16 +217,20 @@ public static class StudentEndpoints
 
         // REQUISITO 6: Verificar unicidade excluindo o próprio registro
         if (await service.CpfExistsAsync(request.Cpf, id))
+        {
             return ApiResponseExtensions.BadRequest(
                 ["CPF já cadastrado"],
                 InternalCodes.CpfAlreadyExists
             );
+        }
 
         if (await service.EmailExistsAsync(request.Email, id))
+        {
             return ApiResponseExtensions.BadRequest(
                 ["Email já cadastrado"],
                 InternalCodes.EmailAlreadyExists
             );
+        }
 
         existingStudent.Name = request.Name;
         existingStudent.BirthDate = request.BirthDate;
@@ -178,7 +243,12 @@ public static class StudentEndpoints
         if (!isValid)
             return ApiResponseExtensions.BadRequest(validationResult);
 
-        return ApiResponseExtensions.Success(existingStudent, "Aluno atualizado com sucesso");
+        var response = new StudentResponse(
+            existingStudent.Id, existingStudent.Name, existingStudent.BirthDate,
+            existingStudent.Cpf, existingStudent.Email, existingStudent.CreatedAt, existingStudent.UpdatedAt
+        );
+
+        return ApiResponseExtensions.Success(response, "Aluno atualizado com sucesso");
     }
 
     private static async Task<IResult> DeleteStudentAsync(

@@ -28,7 +28,6 @@ public class StudentService(IRepository<Student> repository, IValidator<Student>
         return (true, validationResult, addedEntity);
     }
     
-    // REQUISITO 6: Verificar unicidade de CPF
     public async Task<bool> CpfExistsAsync(string cpf, Guid? excludeId = null)
     {
         var spec = new StudentByCpfSpecification(cpf);
@@ -40,7 +39,6 @@ public class StudentService(IRepository<Student> repository, IValidator<Student>
         return excludeId == null || student.Id != excludeId;
     }
 
-    // REQUISITO 6: Verificar unicidade de Email
     public async Task<bool> EmailExistsAsync(string email, Guid? excludeId = null)
     {
         var spec = new StudentByEmailSpecification(email);
@@ -52,14 +50,12 @@ public class StudentService(IRepository<Student> repository, IValidator<Student>
         return excludeId == null || student.Id != excludeId;
     }
 
-    // REQUISITO 9: Buscar por nome
     public async Task<IEnumerable<Student>> SearchByNameAsync(string name)
     {
         var spec = new StudentByNameSpecification(name);
         return await FindAsync(spec);
     }
 
-    // REQUISITO 9: Buscar por CPF
     public async Task<Student?> GetByCpfAsync(string cpf)
     {
         var spec = new StudentByCpfSpecification(cpf);
@@ -70,6 +66,24 @@ public class StudentService(IRepository<Student> repository, IValidator<Student>
     {
         var spec = new StudentByEmailSpecification(email);
         return await FirstOrDefaultAsync(spec);
+    }
+    
+    public async Task<Student?> GetWithEnrollmentsAsync(Guid studentId)
+    {
+        var spec = new StudentsWithEnrollmentsSpecification();
+        var students = await FindAsync(spec);
+        return students.FirstOrDefault(s => s.Id == studentId);
+    } 
+    
+    public async Task<(IEnumerable<Student> Items, int TotalCount)> GetPaginatedAsync(int pageNumber = 1, int pageSize = 10)
+    {
+        var spec = new StudentsPaginatedSpecification(pageNumber, pageSize);
+        var items = await FindAsync(spec);
+
+        var countSpec = new EmptyStudentSpecification();
+        var totalCount = await CountAsync(countSpec);
+        
+        return (items, totalCount);
     }
     
     public async Task<Student?> AuthenticateAsync(string email, string password)

@@ -30,3 +30,26 @@ public class ActiveUsersSpecification : BaseSpecification<User>
         ApplyOrderBy(u => u.Name);
     }
 }
+
+public class UsersPaginatedSpecification : BaseSpecification<User>
+{
+    public UsersPaginatedSpecification(int pageNumber, int pageSize)
+    {
+        ApplyPaging((pageNumber - 1) * pageSize, pageSize);
+        ApplyOrderBy(u => u.Name);
+        AddInclude(u => u.UserRoles);
+        AddInclude("UserRoles.Role");
+    }
+}
+
+public class UserRolesByUserSpecification(Guid userId) : BaseSpecification<UserRole>(ur => ur.UserId == userId);
+
+public class RoleByNameSpecification(string name) : BaseSpecification<Role>(r => r.Name == name);
+
+public class EmptyUserSpecification : BaseSpecification<User>
+{
+    public EmptyUserSpecification()
+    {
+        ApplyOrderBy(u => u.Name);
+    }
+}

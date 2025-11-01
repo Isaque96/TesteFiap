@@ -20,35 +20,75 @@ public static class StudentEndpoints
 
         group.MapGet("/", GetAllStudentsAsync)
             .WithName("GetAllStudents")
-            .WithSummary("REQUISITO 1: Lista todos os alunos paginados e ordenados alfabeticamente");
+            .WithSummary("REQUISITO 1: Lista todos os alunos paginados e ordenados alfabeticamente")
+            .WithDescription("Query params: pageNumber (default 1), pageSize (default 10).")
+            .Produces<BasePagination<StudentResponse>>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapGet("/{id:guid}", GetStudentByIdAsync)
             .WithName("GetStudentById")
-            .WithSummary("Busca aluno por ID");
+            .WithSummary("Busca aluno por ID")
+            .Produces<StudentResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapGet("/{id:guid}/enrollments", GetStudentWithEnrollmentsAsync)
             .WithName("GetStudentWithEnrollments")
-            .WithSummary("Busca aluno com suas matrículas");
+            .WithSummary("Busca aluno com suas matrículas")
+            .Produces<StudentWithEnrollmentsResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapGet("/search", SearchStudentsByNameAsync)
             .WithName("SearchStudentsByName")
-            .WithSummary("REQUISITO 9: Busca alunos por nome");
+            .WithSummary("REQUISITO 9: Busca alunos por nome")
+            .WithDescription("Query param obrigatório: name")
+            .Produces<List<StudentResponse>>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapGet("/cpf/{cpf}", GetStudentByCpfAsync)
             .WithName("GetStudentByCpf")
-            .WithSummary("REQUISITO 9: Busca aluno por CPF");
+            .WithSummary("REQUISITO 9: Busca aluno por CPF")
+            .Produces<StudentResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapPost("/", CreateStudentAsync)
             .WithName("CreateStudent")
-            .WithSummary("Cria novo aluno com validações (REQUISITOS 3, 4, 6, 7, 8)");
+            .WithSummary("Cria novo aluno com validações (REQUISITOS 3, 4, 6, 7, 8)")
+            .Accepts<CreateStudentRequest>(SwaggerExtensions.JsonContentType)
+            .Produces<StudentResponse>(StatusCodes.Status201Created, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapPut("/{id:guid}", UpdateStudentAsync)
             .WithName("UpdateStudent")
-            .WithSummary("Atualiza aluno");
+            .WithSummary("Atualiza aluno")
+            .Accepts<UpdateStudentRequest>(SwaggerExtensions.JsonContentType)
+            .Produces<StudentResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapDelete("/{id:guid}", DeleteStudentAsync)
             .WithName("DeleteStudent")
-            .WithSummary("Exclui aluno");
+            .WithSummary("Exclui aluno")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         return group;
     }

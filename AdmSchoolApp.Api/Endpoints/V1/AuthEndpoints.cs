@@ -18,16 +18,27 @@ public static class AuthEndpoints
             .WithName("Login")
             .WithSummary("Autentica usuário e retorna tokens JWT")
             .WithDescription("Autenticação com JWT usando email e senha")
+            .Accepts<LoginRequests>(SwaggerExtensions.JsonContentType)
+            .Produces<LoginResponse>(StatusCodes.Status200OK, "application/json")
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .AllowAnonymous();
 
         group.MapPost("/refresh", RefreshTokenAsync)
             .WithName("RefreshToken")
             .WithSummary("Renova access token usando refresh token")
+            .Accepts<RefreshTokenRequest>(SwaggerExtensions.JsonContentType)
+            .Produces<TokenResult>(StatusCodes.Status200OK, "application/json")
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .AllowAnonymous();
 
         group.MapPost("/logout", LogoutAsync)
             .WithName("Logout")
             .WithSummary("Revoga refresh token (logout)")
+            .Accepts<RefreshTokenRequest>(SwaggerExtensions.JsonContentType)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .RequireAuthorization();
 
         return group;
@@ -74,9 +85,7 @@ public static class AuthEndpoints
     )
     {
         if (string.IsNullOrWhiteSpace(request.RefreshToken))
-        {
             return ApiResponseExtensions.BadRequest(["Refresh token é obrigatório"]);
-        }
 
         var tokenResult = await tokenService.RefreshTokenAsync(request.RefreshToken, ct);
 

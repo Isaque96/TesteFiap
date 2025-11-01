@@ -22,39 +22,80 @@ public static class UserEndpoints
         group.MapGet("/", GetAllUsersAsync)
             .WithName("GetAllUsers")
             .WithSummary("Lista todos os usuários paginados")
+            .Produces<BasePagination<UserResponse>>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .RequireAuthorization(policy => policy.RequireRole(Admin));
 
         group.MapGet("/{id:guid}", GetUserByIdAsync)
             .WithName("GetUserById")
-            .WithSummary("Busca usuário por ID");
+            .WithSummary("Busca usuário por ID")
+            .Produces<UserResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapGet("/email/{email}", GetUserByEmailAsync)
             .WithName("GetUserByEmail")
             .WithSummary("Busca usuário por email")
+            .Produces<UserResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .RequireAuthorization(policy => policy.RequireRole(Admin));
 
         group.MapPost("/", CreateUserAsync)
             .WithName("CreateUser")
             .WithSummary("Cria novo usuário com roles")
+            .Accepts<CreateUserRequest>(SwaggerExtensions.JsonContentType)
+            .Produces<UserResponse>(StatusCodes.Status201Created, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .RequireAuthorization(policy => policy.RequireRole(Admin));
 
         group.MapPut("/{id:guid}", UpdateUserAsync)
             .WithName("UpdateUser")
             .WithSummary("Atualiza usuário")
+            .Accepts<UpdateUserRequest>(SwaggerExtensions.JsonContentType)
+            .Produces<UserResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .RequireAuthorization(policy => policy.RequireRole(Admin));
 
         group.MapPut("/{id:guid}/password", ChangePasswordAsync)
             .WithName("ChangePassword")
-            .WithSummary("Altera senha do usuário");
+            .WithSummary("Altera senha do usuário")
+            .Accepts<ChangePasswordRequest>(SwaggerExtensions.JsonContentType)
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapPut("/{id:guid}/roles", UpdateUserRolesAsync)
             .WithName("UpdateUserRoles")
             .WithSummary("Atualiza roles do usuário")
+            .Accepts<UpdateUserRolesRequest>(SwaggerExtensions.JsonContentType)
+            .Produces<UserResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .RequireAuthorization(policy => policy.RequireRole(Admin));
 
         group.MapDelete("/{id:guid}", DeleteUserAsync)
             .WithName("DeleteUser")
             .WithSummary("Exclui usuário")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
             .RequireAuthorization(policy => policy.RequireRole(Admin));
 
         return group;

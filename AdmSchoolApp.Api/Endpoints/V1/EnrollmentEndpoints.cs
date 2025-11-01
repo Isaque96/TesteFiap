@@ -17,23 +17,47 @@ public static class EnrollmentEndpoints
 
         group.MapGet("/student/{studentId:guid}", GetEnrollmentsByStudentAsync)
             .WithName("GetEnrollmentsByStudent")
-            .WithSummary("Lista matrículas de um aluno");
+            .WithSummary("Lista matrículas de um aluno")
+            .Produces<List<EnrollmentResponse>>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapGet("/class/{classId:guid}", GetEnrollmentsByClassAsync)
             .WithName("GetEnrollmentsByClass")
-            .WithSummary("Lista alunos matriculados em uma turma");
+            .WithSummary("Lista alunos matriculados em uma turma")
+            .Produces<EnrollmentResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapGet("/{id:guid}", GetEnrollmentByIdAsync)
             .WithName("GetEnrollmentById")
-            .WithSummary("Busca matrícula por ID");
+            .WithSummary("Busca matrícula por ID")
+            .Produces<EnrollmentResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapPost("/", CreateEnrollmentAsync)
             .WithName("CreateEnrollment")
-            .WithSummary("Matricula aluno em turma (valida duplicidade)");
+            .WithSummary("Matricula aluno em turma (valida duplicidade)")
+            .Accepts<CreateEnrollmentRequest>(SwaggerExtensions.JsonContentType)
+            .Produces<EnrollmentResponse>(StatusCodes.Status201Created, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapDelete("/{id:guid}", DeleteEnrollmentAsync)
             .WithName("DeleteEnrollment")
-            .WithSummary("Cancela matrícula");
+            .WithSummary("Cancela matrícula")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         return group;
     }
@@ -111,9 +135,8 @@ public static class EnrollmentEndpoints
         if (classEntity == null)
             return ApiResponseExtensions.NotFound("Turma não encontrada");
 
-        // REQUISITO 5: Verificar se aluno já está matriculado
         if (await service.IsStudentEnrolledInClassAsync(request.StudentId, request.ClassId))
-            return ApiResponseExtensions.BadRequest(
+            return ApiResponseExtensions.Conflict(
                 ["Aluno já está matriculado nesta turma"],
                 InternalCodes.StudentAlreadyEnrolled
             );

@@ -73,7 +73,17 @@ public static class ApiResponseExtensions
 
     public static IResult NoContent(string message = "Operação realizada com sucesso")
     {
-        var response = new BaseResponse<object>(message, null);
+        var response = new BaseResponse<object>(message);
         return Results.Ok(response);
+    }
+
+    public static IResult Conflict(string[] errors, InternalCodes code)
+    {
+        var response = new BaseResponse<object>(
+            message: "Conflito interno",
+            data: null,
+            error: new BaseError(errors, code)
+        );
+        return Results.Conflict(response);
     }
 }

@@ -48,8 +48,7 @@ builder.Services.ConfigureHttpJsonOptions(o =>
     o.SerializerOptions.Converters.Add(new InternalCodesJsonConverter());
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerFullConfig();
 
 builder.Services.AddCors(o => o.AddPolicy("Front",
     p => p.WithOrigins("https://localhost:7200", "http://localhost:5200")
@@ -114,7 +113,13 @@ app.UseSerilogRequestLogging(options =>
 });
 
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "FIAP Admin School API v1");
+    options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.List);
+    options.DisplayRequestDuration();
+    options.EnableTryItOutByDefault();
+});
 
 app.UseExceptionHandler("/error");
 

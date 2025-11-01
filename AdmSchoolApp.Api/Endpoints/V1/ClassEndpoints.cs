@@ -19,27 +19,58 @@ public static class ClassEndpoints
 
         group.MapGet("/", GetAllClassesAsync)
             .WithName("GetAllClasses")
-            .WithSummary("Lista turmas paginadas, ordenadas e com contagem de alunos");
+            .WithSummary("Lista turmas paginadas, ordenadas e com contagem de alunos")
+            .WithDescription("Query params: pageNumber (default 1), pageSize (default 10).")
+            .Produces<BasePagination<ClassWithStudentCountResponse>>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapGet("/{id:guid}", GetClassByIdAsync)
             .WithName("GetClassById")
-            .WithSummary("Busca turma por ID");
+            .WithSummary("Busca turma por ID")
+            .Produces<ClassWithStudentCountResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapGet("/{id:guid}/students", GetClassWithStudentsAsync)
             .WithName("GetClassWithStudents")
-            .WithSummary("Busca turma com lista de alunos matriculados");
+            .WithSummary("Busca turma com lista de alunos matriculados")
+            .Produces<ClassWithStudentsResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapPost("/", CreateClassAsync)
             .WithName("CreateClass")
-            .WithSummary("Cria nova turma (REQUISITO 3 e 4)");
+            .WithSummary("Cria nova turma (REQUISITO 3 e 4)")
+            .Accepts<CreateClassRequest>(SwaggerExtensions.JsonContentType)
+            .Produces<ClassResponse>(StatusCodes.Status201Created, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapPut("/{id:guid}", UpdateClassAsync)
             .WithName("UpdateClass")
-            .WithSummary("Atualiza turma");
+            .WithSummary("Atualiza turma")
+            .Accepts<UpdateClassRequest>(SwaggerExtensions.JsonContentType)
+            .Produces<ClassResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group.MapDelete("/{id:guid}", DeleteClassAsync)
             .WithName("DeleteClass")
-            .WithSummary("Exclui turma");
+            .WithSummary("Exclui turma")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         return group;
     }
@@ -120,6 +151,9 @@ public static class ClassEndpoints
         [FromServices] ClassService service
     )
     {
+        if (await service.NameExistsAsync(request.Name)) 
+            return ApiResponseExtensions.BadRequest(["Nome da turma já cadastrado"]);
+
         var classEntity = new Class
         {
             Id = Guid.NewGuid(),
@@ -128,7 +162,7 @@ public static class ClassEndpoints
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
-
+        
         var (isValid, validationResult, entity) = await service.AddAsync(classEntity);
 
         if (!isValid)

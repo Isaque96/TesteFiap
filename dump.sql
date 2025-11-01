@@ -277,5 +277,5 @@ END
 ********************************************************************************************/
 
 INSERT INTO [adm].[Role](Name, Description) VALUES ('User', 'Perfil básico de usuário'), ('Admin', 'Perfil de acesso administrador');
-INSERT INTO [adm].[User](Name, Email, PasswordHash, IsActive) VALUES ('Isaque Schuwarte', 'isaque.schuwarte@fiap.com.br', '$2a$11$qCZ0w4vGPVeTcKV3VJ15Zue5sM/pNP9wkhEzFRBo93TEX8xphdOAe', 1);
+INSERT INTO [adm].[User] (Id,Name,Email,PasswordHash,IsActive) VALUES (N'C7CEB797-E794-440E-A111-6BAAC6677A4B',N'Isaque Schuwarte',N'isaque.schuwarte@fiap.com.br',0x243261243131246D3132555662666F4E4E76617A5772302F4542312E2E4B6C4B61516F4B7972424F6C3243724A6669706E772F6F6A37556E3576526D,1);
 INSERT INTO [adm].[UserRole](UserId, RoleId) VALUES ((SELECT Id FROM [adm].[User] WHERE Email = 'isaque.schuwarte@fiap.com.br'), (SELECT Id FROM [adm].[Role] WHERE Name = 'Admin'));

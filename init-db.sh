@@ -1,10 +1,20 @@
 ﻿#!/bin/bash
-# Espera o SQL Server iniciar
-echo "Aguardando SQL Server iniciar..."
-sleep 15
+set -e
 
-# Executa o dump.sql
-echo "Executando dump.sql..."
-/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -d master -i /docker-entrypoint-initdb.d/dump.sql
+# Start SQL Server in background
+/opt/mssql/bin/sqlservr &
 
-echo "Banco inicializado."
+# Wait for SQL Server to be available
+echo "Aguardando SQL Server..."
+until /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "SuaSenhaForte123!" -Q "SELECT 1" > /dev/null 2>&1; do
+  sleep 1
+done
+
+# If dump.sql exists, run it
+if [ -f /tmp/dump.sql ]; then
+  echo "Executando /tmp/dump.sql..."
+  /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "SuaSenhaForte123!" -i /tmp/dump.sql
+fi
+
+# Bring sqlservr process to foreground to keep container alive
+wait

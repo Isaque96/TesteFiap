@@ -1,53 +1,73 @@
-version: '3.8'
-
-sqlserver:
-  image: mcr.microsoft.com/mssql/server:2022-latest
-  container_name: adm_school_sqlserver
-  environment:
-    SA_PASSWORD: "SuaSenhaForte123!"
-    ACCEPT_EULA: "Y"
-  ports:
-    - "1433:1433"
-  volumes:
-    - sqlserver_data:/var/opt/mssql
-    - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql:ro
-    - ./init-db.sh:/init-db.sh:ro
-  entrypoint: ["/bin/bash", "/init-db.sh"]
-  healthcheck:
-    test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SuaSenhaForte123! -Q 'SELECT 1'"]
-    interval: 10s
-    timeout: 5s
-    retries: 5
-
-  api:
-    build:
-      context: ./AdmSchoolApp.Api
-      dockerfile: Dockerfile
-    container_name: adm_school_api
-    depends_on:
-      sqlserver:
-        condition: service_healthy
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: adm_school_sqlserver
     environment:
-      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=AdmSchoolDb;User Id=sa;Password=SuaSenhaForte123!;"
-      ASPNETCORE_ENVIRONMENT: "Development"
+      - SA_PASSWORD=SuaSenhaForte123!
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - adm_network
+    restart: unless-stopped
+
+  db-init:
+    image: mcr.microsoft.com/mssql-tools
+    container_name: adm_school_db_init
+    depends_on:
+      - sqlserver
+    networks:
+      - adm_network
+    volumes:
+      - ./dump.sql:/tmp/dump.sql:ro    # ajuste caminho do seu dump.sql
+    environment:
+      - SA_PASSWORD=SuaSenhaForte123!
+    entrypoint:
+      - sh
+      - -c
+      - |
+        echo "Waiting for SQL Server..."
+        until /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P "$$SA_PASSWORD" -Q "SELECT 1" >/dev/null 2>&1; do
+          echo "  waiting..."
+          sleep 2
+        done
+        echo "SQL Server is up — executing /tmp/dump.sql"
+        /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P "$$SA_PASSWORD" -i /tmp/dump.sql
+        echo "db-init finished"
+    restart: "no"
+
+  adm_school_api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: adm_school_api
+    environment:
+      - ConnectionStrings__DefaultConnection="Server=sqlserver,1433;Database=master;User Id=sa;Password=SuaSenhaForte123!;"
+      - ASPNETCORE_ENVIRONMENT=Development
     ports:
       - "5000:80"
     networks:
       - adm_network
+    depends_on:
+      - sqlserver
+    restart: unless-stopped
 
-  front:
+  adm_school_front:
     build:
-      context: ./AdmSchoolApp.Web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Dockerfile.web
     container_name: adm_school_front
     depends_on:
-      - api
+      - adm_school_api
     environment:
-      ApiBaseUrl: "http://api:80"
+      - BACKAPI__BASEURL=http://adm_school_api:80
     ports:
       - "5001:80"
     networks:
       - adm_network
+    restart: unless-stopped
 
 volumes:
   sqlserver_data:

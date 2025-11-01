@@ -8,7 +8,7 @@
       "applicationUrl": "http://localhost:5183",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "CONNECTIONSTRINGS__DEFAULT": "Server=localhost,1433;Database=master;User Id=sa;Password=senha_forte_123;TrustServerCertificate=True;"
+        "CONNECTIONSTRINGS__DEFAULT": "Server=localhost,1433;Database=master;User Id=sa;Password=SuaSenhaForte123!;TrustServerCertificate=True;"
       }
     },
     "https": {
@@ -18,7 +18,7 @@
       "applicationUrl": "http://localhost:5183;https://localhost:5184",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "CONNECTIONSTRINGS__DEFAULT": "Server=localhost,1433;Database=master;User Id=sa;Password=senha_forte_123;TrustServerCertificate=True;"
+        "CONNECTIONSTRINGS__DEFAULT": "Server=localhost,1433;Database=master;User Id=sa;Password=SuaSenhaForte123!;TrustServerCertificate=True;"
       }
     }
   }

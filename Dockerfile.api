@@ -1,0 +1,38 @@
+﻿# Dockerfile.api
+ARG APP_UID=1000
+ARG APP_GID=1000
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+
+# Copia apenas os csproj para aproveitar cache
+COPY ["AdmSchoolApp.Api/AdmSchoolApp.Api.csproj", "AdmSchoolApp.Api/"]
+COPY ["AdmSchoolApp.Domain/AdmSchoolApp.Domain.csproj", "AdmSchoolApp.Domain/"]
+COPY ["AdmSchoolApp.Application/AdmSchoolApp.Application.csproj", "AdmSchoolApp.Application/"]
+COPY ["AdmSchoolApp.Infrastructure/AdmSchoolApp.Infrastructure.csproj", "AdmSchoolApp.Infrastructure/"]
+
+RUN dotnet restore "AdmSchoolApp.Api/AdmSchoolApp.Api.csproj"
+
+COPY . .
+WORKDIR "/src/AdmSchoolApp.Api"
+RUN dotnet build "AdmSchoolApp.Api.csproj" -c ${BUILD_CONFIGURATION} -o /app/build --no-restore
+
+RUN dotnet publish "AdmSchoolApp.Api.csproj" -c ${BUILD_CONFIGURATION} -o /app/publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+ARG APP_UID=1000
+ARG APP_GID=1000
+ENV ASPNETCORE_URLS=http://+:80
+WORKDIR /app
+
+RUN addgroup --system appgroup --gid ${APP_GID} \
+ && adduser --system --ingroup appgroup --uid ${APP_UID} --home /app appuser
+
+COPY --from=build /app/publish/ ./
+RUN chown -R appuser:appgroup /app
+
+USER appuser
+EXPOSE 80
+
+ENTRYPOINT ["dotnet", "AdmSchoolApp.Api.dll"]

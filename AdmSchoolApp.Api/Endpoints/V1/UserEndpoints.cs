@@ -54,7 +54,8 @@ public static class UserEndpoints
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
-            .RequireAuthorization(policy => policy.RequireRole(Admin));
+            .AllowAnonymous();
+            //.RequireAuthorization(policy => policy.RequireRole(Admin));
 
         group.MapPut("/{id:guid}", UpdateUserAsync)
             .WithName("UpdateUser")

@@ -48,7 +48,7 @@ public static class AuthEndpoints
         var user = await userService.AuthenticateAsync(request.Email, request.Password);
 
         if (user == null)
-            return ApiResponseExtensions.Unauthorized("Email ou senha inválidos");
+            return ApiResponseExtensions.Unauthorized();
 
         // Gerar tokens
         var tokenResult = await tokenService.GenerateTokenAsync(user, ct);
@@ -81,7 +81,7 @@ public static class AuthEndpoints
         var tokenResult = await tokenService.RefreshTokenAsync(request.RefreshToken, ct);
 
         return tokenResult == null ?
-            ApiResponseExtensions.Unauthorized("Refresh token inválido ou expirado") :
+            ApiResponseExtensions.Unauthorized() :
             ApiResponseExtensions.Success(tokenResult, "Token renovado com sucesso");
     }
 

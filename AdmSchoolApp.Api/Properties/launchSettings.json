@@ -10,6 +10,16 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "CONNECTIONSTRINGS__DEFAULT": "Server=localhost,1433;Database=master;User Id=sa;Password=senha_forte_123;TrustServerCertificate=True;"
       }
+    },
+    "https": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5183;https://localhost:5184",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "CONNECTIONSTRINGS__DEFAULT": "Server=localhost,1433;Database=master;User Id=sa;Password=senha_forte_123;TrustServerCertificate=True;"
+      }
     }
   }
 }

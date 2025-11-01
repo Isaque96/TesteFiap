@@ -5,6 +5,7 @@ using AdmSchoolApp.Domain.Models;
 using AdmSchoolApp.Endpoints.V1;
 using AdmSchoolApp.Extensions;
 using AdmSchoolApp.Infrastructure;
+using AdmSchoolApp.Infrastructure.Configurations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.IdentityModel.Tokens;
@@ -60,23 +61,32 @@ builder.Services.AddCors(o => o.AddPolicy("Front",
         .AllowCredentials()
 ));
 
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "dev-secret-change";
-var issuer = builder.Configuration["Jwt:Issuer"] ?? "your-issuer";
-var audience = builder.Configuration["Jwt:Audience"] ?? "api";
+var jwtSettings = builder.Configuration
+                      .GetSection(JwtSettings.SectionName)
+                      .Get<JwtSettings>()
+                  ?? throw new InvalidOperationException($"Missing '{JwtSettings.SectionName}' configuration section.");
+
+// Validações
+if (string.IsNullOrWhiteSpace(jwtSettings.SecretKey) || jwtSettings.SecretKey.Length < 32)
+    throw new InvalidOperationException("JWT SecretKey must be at least 32 characters long.");
+
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.SectionName));
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(o =>
+    .AddJwtBearer(options =>
     {
-        o.TokenValidationParameters = new TokenValidationParameters
+        options.SaveToken = true;
+        options.RequireHttpsMetadata = false; // Em produção: true
+        options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = issuer,
-            ValidAudience = audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromSeconds(30)
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+            ClockSkew = TimeSpan.Zero
         };
     });
 builder.Services.AddAuthorization();

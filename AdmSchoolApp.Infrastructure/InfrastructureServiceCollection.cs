@@ -1,4 +1,5 @@
 ﻿using AdmSchoolApp.Domain.Interfaces;
+using AdmSchoolApp.Infrastructure.Configurations;
 using AdmSchoolApp.Infrastructure.Contexts;
 using AdmSchoolApp.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -19,7 +20,6 @@ public static class InfrastructureServiceCollection
                 sql.EnableRetryOnFailure(3);
             });
         });
-
         services.AddScoped(typeof(IRepository<>), typeof(BaseRepository<>));
         
         return services;

@@ -10,7 +10,7 @@ public interface IRepository<T> where T : class
     Task<IReadOnlyList<T>> GetAllAsync(CancellationToken ct = default);
     Task<IReadOnlyList<T>> FindAsync(ISpecification<T> spec, CancellationToken ct = default);
     Task<T?> FirstOrDefaultAsync(ISpecification<T> spec, CancellationToken ct = default);
-    Task<int> CountAsync(ISpecification<T> spec, CancellationToken ct = default);
+    Task<int> CountAsync(ISpecification<T>? spec, CancellationToken ct = default);
     Task<bool> AnyAsync(ISpecification<T> spec, CancellationToken ct = default);
 
     // Paginação

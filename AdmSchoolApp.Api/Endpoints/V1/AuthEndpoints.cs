@@ -1,10 +1,9 @@
-﻿using AdmSchoolApp.Domain.Entities;
+﻿using AdmSchoolApp.Application.Services;
 using AdmSchoolApp.Domain.Interfaces;
+using AdmSchoolApp.Domain.Models.Requests;
 using AdmSchoolApp.Domain.Models.Responses;
-using AdmSchoolApp.Infrastructure.Contexts;
-using Microsoft.AspNetCore.Identity.Data;
+using AdmSchoolApp.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AdmSchoolApp.Endpoints.V1;
 
@@ -12,12 +11,13 @@ public static class AuthEndpoints
 {
     public static IEndpointRouteBuilder MapAuthEndpoints(this IEndpointRouteBuilder routes)
     {
-        var group = routes.MapGroup("/api/auth")
+        var group = routes.MapGroup("/auth")
             .WithTags("Authentication");
 
         group.MapPost("/login", LoginAsync)
             .WithName("Login")
             .WithSummary("Autentica usuário e retorna tokens JWT")
+            .WithDescription("Autenticação com JWT usando email e senha")
             .AllowAnonymous();
 
         group.MapPost("/refresh", RefreshTokenAsync)
@@ -34,35 +34,27 @@ public static class AuthEndpoints
     }
     
     private static async Task<IResult> LoginAsync(
-        [FromBody] LoginRequest request,
-        [FromServices] IRepository<User> userRepo,
+        [FromBody] LoginRequests request,
+        [FromServices] UserService userService,
         [FromServices] ITokenService tokenService,
-        [FromServices] AdmSchoolDbContext context,
         CancellationToken ct
     )
     {
-        // Buscar usuário com roles
-        var user = await context.Users
-            .Include(u => u.UserRoles)
-                .ThenInclude(ur => ur.Role)
-            .FirstOrDefaultAsync(u => u.Email == request.Email, ct);
+        // Validar entrada
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            return ApiResponseExtensions.BadRequest(["Email e senha são obrigatórios"]);
 
-        if (user is null || !user.IsActive)
-            return Results.Unauthorized();
+        // Autenticar usuário (valida senha com BCrypt)
+        var user = await userService.AuthenticateAsync(request.Email, request.Password);
 
-        // Validar senha (você deve usar BCrypt/Argon2 aqui)
-        // Exemplo simplificado:
-        // if (!BCrypt.Net.BCrypt.Verify(request.Password, Encoding.UTF8.GetString(user.PasswordHash)))
-        // {
-        //     return Results.Unauthorized();
-        // }
-
-        // TODO: Implementar validação de senha real
+        if (user == null)
+            return ApiResponseExtensions.Unauthorized("Email ou senha inválidos");
 
         // Gerar tokens
         var tokenResult = await tokenService.GenerateTokenAsync(user, ct);
 
-        var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList();
+        // Obter roles do usuário
+        var roles = user.UserRoles.Select(ur => ur.Role.Name).ToList() ?? [];
 
         var response = new LoginResponse(
             tokenResult.AccessToken,
@@ -72,25 +64,38 @@ public static class AuthEndpoints
             new UserInfo(user.Id, user.Name, user.Email, roles)
         );
 
-        return Results.Ok(response);
+        return ApiResponseExtensions.Success(response, "Login realizado com sucesso");
     }
 
     private static async Task<IResult> RefreshTokenAsync(
         [FromBody] RefreshTokenRequest request,
         [FromServices] ITokenService tokenService,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+        {
+            return ApiResponseExtensions.BadRequest(["Refresh token é obrigatório"]);
+        }
+
         var tokenResult = await tokenService.RefreshTokenAsync(request.RefreshToken, ct);
 
-        return tokenResult is null ? Results.Unauthorized() : Results.Ok(tokenResult);
+        return tokenResult == null ?
+            ApiResponseExtensions.Unauthorized("Refresh token inválido ou expirado") :
+            ApiResponseExtensions.Success(tokenResult, "Token renovado com sucesso");
     }
 
     private static async Task<IResult> LogoutAsync(
         [FromBody] RefreshTokenRequest request,
         [FromServices] ITokenService tokenService,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            return ApiResponseExtensions.BadRequest(["Refresh token é obrigatório"]);
+
         await tokenService.RevokeRefreshTokenAsync(request.RefreshToken, ct);
-        return Results.NoContent();
+
+        return ApiResponseExtensions.NoContent("Logout realizado com sucesso");
     }
 }

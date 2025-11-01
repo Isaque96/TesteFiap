@@ -10,7 +10,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdmSchoolApp.Infrastructure
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdmSchoolApp.Tests", "AdmSchoolApp.Tests\AdmSchoolApp.Tests.csproj", "{4307450D-3152-49F2-85C1-CDB15C19BC31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdmSchoolApp.Web", "AdmSchoolApp.Web\AdmSchoolApp.Web.csproj", "{3A38EB61-416A-4CDB-84ED-8360BF6ACFA0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdmSchoolApp.Web", "AdmSchoolApp.Web\AdmSchoolApp.Web.csproj", "{CDFBAC6F-469A-4C93-AF13-63D13A2FD7B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,9 +38,9 @@ Global
 		{4307450D-3152-49F2-85C1-CDB15C19BC31}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4307450D-3152-49F2-85C1-CDB15C19BC31}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4307450D-3152-49F2-85C1-CDB15C19BC31}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3A38EB61-416A-4CDB-84ED-8360BF6ACFA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3A38EB61-416A-4CDB-84ED-8360BF6ACFA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3A38EB61-416A-4CDB-84ED-8360BF6ACFA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3A38EB61-416A-4CDB-84ED-8360BF6ACFA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDFBAC6F-469A-4C93-AF13-63D13A2FD7B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDFBAC6F-469A-4C93-AF13-63D13A2FD7B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDFBAC6F-469A-4C93-AF13-63D13A2FD7B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDFBAC6F-469A-4C93-AF13-63D13A2FD7B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -18,38 +18,41 @@ public class ApiService(HttpClient httpClient, IAuthService authService) : IApiS
     }
 
     // Students
-    public async Task<BasePagination<StudentResponse>> GetStudentsAsync(int pageNumber = 1, int pageSize = 10)
+    public async Task<BaseResponse<BasePagination<StudentResponse>>> GetStudentsAsync(int pageNumber = 1, int pageSize = 10)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<BasePagination<StudentResponse>>(
+        return await httpClient.GetFromJsonAsync<BaseResponse<BasePagination<StudentResponse>>>(
             $"/api/v1/students?pageNumber={pageNumber}&pageSize={pageSize}") 
-            ?? new BasePagination<StudentResponse>();
+            ?? new BaseResponse<BasePagination<StudentResponse>>();
     }
 
-    public async Task<StudentResponse?> GetStudentByIdAsync(Guid id)
+    public async Task<BaseResponse<StudentResponse>> GetStudentByIdAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<StudentResponse>($"/api/v1/students/{id}");
+        return await httpClient.GetFromJsonAsync<BaseResponse<StudentResponse>>($"/api/v1/students/{id}") ??
+               new BaseResponse<StudentResponse>();
     }
 
-    public async Task<StudentWithEnrollmentsResponse?> GetStudentWithEnrollmentsAsync(Guid id)
+    public async Task<BaseResponse<StudentWithEnrollmentsResponse>> GetStudentWithEnrollmentsAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<StudentWithEnrollmentsResponse>(
-            $"/api/v1/students/{id}/enrollments");
+        return await httpClient.GetFromJsonAsync<BaseResponse<StudentWithEnrollmentsResponse>>(
+            $"/api/v1/students/{id}/enrollments") ??
+               new BaseResponse<StudentWithEnrollmentsResponse>();
     }
 
-    public async Task<List<StudentResponse>> SearchStudentsByNameAsync(string name)
+    public async Task<BaseResponse<List<StudentResponse>>> SearchStudentsByNameAsync(string name)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<List<StudentResponse>>(
-            $"/api/v1/students/search?name={Uri.EscapeDataString(name)}") ?? [];
+        return await httpClient.GetFromJsonAsync<BaseResponse<List<StudentResponse>>>(
+            $"/api/v1/students/search?name={Uri.EscapeDataString(name)}") ?? new BaseResponse<List<StudentResponse>>();
     }
 
-    public async Task<StudentResponse?> GetStudentByCpfAsync(string cpf)
+    public async Task<BaseResponse<StudentResponse>> GetStudentByCpfAsync(string cpf)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<StudentResponse>($"/api/v1/students/cpf/{cpf}");
+        return await httpClient.GetFromJsonAsync<BaseResponse<StudentResponse>>($"/api/v1/students/cpf/{cpf}") ??
+               new BaseResponse<StudentResponse>();
     }
 
     public async Task<bool> CreateStudentAsync(CreateStudentRequest student)
@@ -74,25 +77,26 @@ public class ApiService(HttpClient httpClient, IAuthService authService) : IApiS
     }
 
     // Classes
-    public async Task<BasePagination<ClassWithStudentCountResponse>> GetClassesAsync(int pageNumber = 1, int pageSize = 10)
+    public async Task<BaseResponse<BasePagination<ClassWithStudentCountResponse>>> GetClassesAsync(int pageNumber = 1, int pageSize = 10)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<BasePagination<ClassWithStudentCountResponse>>(
+        return await httpClient.GetFromJsonAsync<BaseResponse<BasePagination<ClassWithStudentCountResponse>>>(
             $"/api/v1/classes?pageNumber={pageNumber}&pageSize={pageSize}") 
-            ?? new BasePagination<ClassWithStudentCountResponse>();
+            ?? new BaseResponse<BasePagination<ClassWithStudentCountResponse>>();
     }
 
-    public async Task<ClassWithStudentCountResponse?> GetClassByIdAsync(Guid id)
+    public async Task<BaseResponse<ClassWithStudentCountResponse>> GetClassByIdAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<ClassWithStudentCountResponse>($"/api/v1/classes/{id}");
+        return await httpClient.GetFromJsonAsync<BaseResponse<ClassWithStudentCountResponse>>($"/api/v1/classes/{id}") ??
+               new BaseResponse<ClassWithStudentCountResponse>();
     }
 
-    public async Task<ClassWithStudentsResponse?> GetClassWithStudentsAsync(Guid id)
+    public async Task<BaseResponse<ClassWithStudentsResponse>> GetClassWithStudentsAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<ClassWithStudentsResponse>(
-            $"/api/v1/classes/{id}/students");
+        return await httpClient.GetFromJsonAsync<BaseResponse<ClassWithStudentsResponse>>(
+            $"/api/v1/classes/{id}/students") ?? new BaseResponse<ClassWithStudentsResponse>();
     }
 
     public async Task<bool> CreateClassAsync(CreateClassRequest classRequest)
@@ -117,24 +121,25 @@ public class ApiService(HttpClient httpClient, IAuthService authService) : IApiS
     }
 
     // Enrollments
-    public async Task<List<EnrollmentResponse>> GetEnrollmentsByStudentAsync(Guid studentId)
+    public async Task<BaseResponse<List<EnrollmentResponse>>> GetEnrollmentsByStudentAsync(Guid studentId)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<List<EnrollmentResponse>>(
-            $"/api/v1/enrollments/student/{studentId}") ?? [];
+        return await httpClient.GetFromJsonAsync<BaseResponse<List<EnrollmentResponse>>>(
+            $"/api/v1/enrollments/student/{studentId}") ?? new BaseResponse<List<EnrollmentResponse>>();
     }
 
-    public async Task<EnrollmentResponse?> GetEnrollmentsByClassAsync(Guid classId)
+    public async Task<BaseResponse<EnrollmentResponse>> GetEnrollmentsByClassAsync(Guid classId)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<EnrollmentResponse>(
-            $"/api/v1/enrollments/class/{classId}");
+        return await httpClient.GetFromJsonAsync<BaseResponse<EnrollmentResponse>>(
+            $"/api/v1/enrollments/class/{classId}") ?? new BaseResponse<EnrollmentResponse>();
     }
 
-    public async Task<EnrollmentResponse?> GetEnrollmentByIdAsync(Guid id)
+    public async Task<BaseResponse<EnrollmentResponse>> GetEnrollmentByIdAsync(Guid id)
     {
         await SetAuthorizationHeaderAsync();
-        return await httpClient.GetFromJsonAsync<EnrollmentResponse>($"/api/v1/enrollments/{id}");
+        return await httpClient.GetFromJsonAsync<BaseResponse<EnrollmentResponse>>($"/api/v1/enrollments/{id}") ??
+               new BaseResponse<EnrollmentResponse>();
     }
 
     public async Task<bool> CreateEnrollmentAsync(CreateEnrollmentRequest enrollment)

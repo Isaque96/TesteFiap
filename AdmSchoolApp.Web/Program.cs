@@ -1,26 +1,18 @@
-using AdmSchoolApp.Web.Components;
 using AdmSchoolApp.Web.Providers;
 using AdmSchoolApp.Web.Services;
-using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Serviços
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-
-// LocalStorage
-builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddAuthorizationCore();
+builder.Services.AddProtectedBrowserStorage();
 
 // HttpClient configurado para a API
 var baseUrl = builder.Configuration["BackApi:BaseUrl"];
 ArgumentException.ThrowIfNullOrEmpty(baseUrl);
-
-builder.Services.AddScoped(sp => new HttpClient 
-{ 
-    BaseAddress = new Uri(baseUrl)
-});
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -28,24 +20,33 @@ builder.Services.AddScoped<IApiService, ApiService>();
 
 // Authentication
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
-builder.Services.AddScoped<AuthenticationStateProvider>(provider => 
+builder.Services.AddScoped<AuthenticationStateProvider>(provider =>
     provider.GetRequiredService<CustomAuthenticationStateProvider>());
 
-builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri(baseUrl)
+});
 
 var app = builder.Build();
 
+// Pipeline
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
+
+// importante: servir arquivos estáticos antes do routing/fallback
 app.UseStaticFiles();
+
 app.UseRouting();
 
 app.MapBlazorHub();
+
+// fallback para a página _Host (garante que o wrapper com <head> seja servido)
 app.MapFallbackToPage("/_Host");
 
 await app.RunAsync();

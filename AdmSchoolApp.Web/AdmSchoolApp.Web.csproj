@@ -7,14 +7,24 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <_ContentIncludedByDefault Remove="Components\App.razor" />
+      <_ContentIncludedByDefault Remove="Components\Layout\MainLayout.razor" />
+      <_ContentIncludedByDefault Remove="Components\Pages\Error.razor" />
+      <_ContentIncludedByDefault Remove="Components\Pages\Home.razor" />
+      <_ContentIncludedByDefault Remove="Components\Routes.razor" />
+      <_ContentIncludedByDefault Remove="Components\_Imports.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Services\" />
+    </ItemGroup>
+
+    <ItemGroup>
       <ProjectReference Include="..\AdmSchoolApp.Domain\AdmSchoolApp.Domain.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-      <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.10" />
-      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
-      <PackageReference Include="System.Net.Http.Json" Version="9.0.10" />
+      <PackageReference Include="Microsoft.AspNetCore.ProtectedBrowserStorage" Version="0.1.0-alpha.19521.1" />
     </ItemGroup>
 
 </Project>

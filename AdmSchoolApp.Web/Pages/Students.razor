@@ -1,0 +1,55 @@
+@page "/students"
+@using AdmSchoolApp.Domain.Models.Responses
+@attribute [Authorize]
+@inject IApiService Api
+@inject IJSRuntime Js
+
+<h3>Alunos</h3>
+<div class="card card-dark p-3">
+    <div class="table-responsive">
+        <table class="table table-striped table-dark" id="studentsTable">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>CPF</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach(var s in _students)
+                {
+                    <tr>
+                        <td>@s.Name</td>
+                        <td>@s.Email</td>
+                        <td>@s.Cpf</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<StudentResponse> _students = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var res = await Api.GetStudentsAsync(1, 100);
+            _students = res.Data?.Items.ToList() ?? [];
+        }
+        catch
+        {
+            _students = [];
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Js.InvokeVoidAsync("initDataTable", "#studentsTable");
+        }
+    }
+}

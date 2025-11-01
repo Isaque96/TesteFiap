@@ -1,0 +1,129 @@
+﻿@page "/"
+@using AdmSchoolApp.Domain.Models.Responses
+@using AdmSchoolApp.Web.Services
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@inject IApiService ApiService
+
+<PageTitle>Dashboard</PageTitle>
+
+<div class="dashboard">
+    <h1 class="mb-4">
+        <i class="fas fa-chart-line me-2"></i>
+        Dashboard
+    </h1>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total de Alunos</h6>
+                            <h2 class="mb-0">@_totalAlunos</h2>
+                        </div>
+                        <div class="stat-icon bg-primary">
+                            <i class="fas fa-user-graduate fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total de Turmas</h6>
+                            <h2 class="mb-0">@_totalTurmas</h2>
+                        </div>
+                        <div class="stat-icon bg-success">
+                            <i class="fas fa-chalkboard-teacher fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Alunos Recentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (_alunos == null)
+                    {
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Carregando...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (!_alunos.Any())
+                    {
+                        <p class="text-muted text-center py-4">Nenhum aluno cadastrado.</p>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Email</th>
+                                        <th>CPF</th>
+                                        <th>Data Nascimento</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var aluno in _alunos.Take(5))
+                                    {
+                                        <tr>
+                                            <td>@aluno.Name</td>
+                                            <td>@aluno.Email</td>
+                                            <td>@aluno.Cpf</td>
+                                            <td>@aluno.BirthDate.ToString("dd/MM/yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<StudentResponse>? _alunos;
+    private int _totalAlunos;
+    private int _totalTurmas;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        try
+        {
+            _alunos = (await ApiService.GetStudentsAsync()).Items.ToList();
+            var turmas = (await ApiService.GetClassesAsync()).Items.ToList();
+            
+            _totalAlunos = _alunos?.Count ?? 0;
+            _totalTurmas = turmas?.Count ?? 0;
+        }
+        catch (Exception)
+        {
+            _alunos = [];
+        }
+    }
+}

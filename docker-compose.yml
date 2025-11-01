@@ -1,0 +1,57 @@
+version: '3.8'
+
+sqlserver:
+  image: mcr.microsoft.com/mssql/server:2022-latest
+  container_name: adm_school_sqlserver
+  environment:
+    SA_PASSWORD: "SuaSenhaForte123!"
+    ACCEPT_EULA: "Y"
+  ports:
+    - "1433:1433"
+  volumes:
+    - sqlserver_data:/var/opt/mssql
+    - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql:ro
+    - ./init-db.sh:/init-db.sh:ro
+  entrypoint: ["/bin/bash", "/init-db.sh"]
+  healthcheck:
+    test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SuaSenhaForte123! -Q 'SELECT 1'"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+
+  api:
+    build:
+      context: ./AdmSchoolApp.Api
+      dockerfile: Dockerfile
+    container_name: adm_school_api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver;Database=AdmSchoolDb;User Id=sa;Password=SuaSenhaForte123!;"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    ports:
+      - "5000:80"
+    networks:
+      - adm_network
+
+  front:
+    build:
+      context: ./AdmSchoolApp.Web
+      dockerfile: Dockerfile
+    container_name: adm_school_front
+    depends_on:
+      - api
+    environment:
+      ApiBaseUrl: "http://api:80"
+    ports:
+      - "5001:80"
+    networks:
+      - adm_network
+
+volumes:
+  sqlserver_data:
+
+networks:
+  adm_network:
+    driver: bridge

@@ -43,7 +43,7 @@ public static class ClassEndpoints
 
         group.MapPost("/", CreateClassAsync)
             .WithName("CreateClass")
-            .WithSummary("Cria nova turma (REQUISITO 3 e 4)")
+            .WithSummary("Cria nova turma")
             .Accepts<CreateClassRequest>(SwaggerExtensions.JsonContentType)
             .Produces<ClassResponse>(StatusCodes.Status201Created, SwaggerExtensions.JsonContentType)
             .ProducesProblem(StatusCodes.Status400BadRequest)

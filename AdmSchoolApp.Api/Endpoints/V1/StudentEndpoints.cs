@@ -20,7 +20,7 @@ public static class StudentEndpoints
 
         group.MapGet("/", GetAllStudentsAsync)
             .WithName("GetAllStudents")
-            .WithSummary("REQUISITO 1: Lista todos os alunos paginados e ordenados alfabeticamente")
+            .WithSummary("Lista todos os alunos paginados e ordenados alfabeticamente")
             .WithDescription("Query params: pageNumber (default 1), pageSize (default 10).")
             .Produces<BasePagination<StudentResponse>>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
@@ -44,7 +44,7 @@ public static class StudentEndpoints
 
         group.MapGet("/search", SearchStudentsByNameAsync)
             .WithName("SearchStudentsByName")
-            .WithSummary("REQUISITO 9: Busca alunos por nome")
+            .WithSummary("Busca alunos por nome")
             .WithDescription("Query param obrigatório: name")
             .Produces<List<StudentResponse>>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
             .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -53,7 +53,7 @@ public static class StudentEndpoints
 
         group.MapGet("/cpf/{cpf}", GetStudentByCpfAsync)
             .WithName("GetStudentByCpf")
-            .WithSummary("REQUISITO 9: Busca aluno por CPF")
+            .WithSummary("Busca aluno por CPF")
             .Produces<StudentResponse>(StatusCodes.Status200OK, SwaggerExtensions.JsonContentType)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
@@ -61,7 +61,7 @@ public static class StudentEndpoints
 
         group.MapPost("/", CreateStudentAsync)
             .WithName("CreateStudent")
-            .WithSummary("Cria novo aluno com validações (REQUISITOS 3, 4, 6, 7, 8)")
+            .WithSummary("Cria novo aluno com validações")
             .Accepts<CreateStudentRequest>(SwaggerExtensions.JsonContentType)
             .Produces<StudentResponse>(StatusCodes.Status201Created, SwaggerExtensions.JsonContentType)
             .ProducesProblem(StatusCodes.Status400BadRequest)

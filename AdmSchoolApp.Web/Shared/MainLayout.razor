@@ -1,0 +1,44 @@
+﻿@using AdmSchoolApp.Web.Providers
+@using AdmSchoolApp.Web.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4">
+            <AuthorizeView>
+                <Authorized>
+                    <span class="me-3">
+                        <i class="fas fa-user-circle me-2"></i>
+                        @context.User.Identity?.Name
+                    </span>
+                    <button class="btn btn-outline-danger btn-sm" @onclick="Logout">
+                        <i class="fas fa-sign-out-alt me-1"></i> Sair
+                    </button>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    [Inject] private IAuthService AuthService { get; set; } = default!;
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+    [Inject] private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
+
+    private async Task Logout()
+    {
+        await AuthService.LogoutAsync();
+        var authStateProvider = (CustomAuthenticationStateProvider)AuthStateProvider;
+        authStateProvider.NotifyAuthenticationStateChanged();
+        Navigation.NavigateTo("/login");
+    }
+}

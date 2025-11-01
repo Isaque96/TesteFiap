@@ -1,4 +1,73 @@
-﻿### Sistema Administrativo Escola (AdmSchoolApp)
+### Execução rápida — Docker & docker-compose
+
+Antes de tudo: o Docker precisa estar instalado e operacional na sua máquina (o daemon do Docker deve estar rodando).
+
+Verificações rápidas:
+
+* Verifique se o Docker está instalado e rodando:
+
+  ```bash
+  docker --version
+  docker info   # mostra se o daemon está ativo
+  ```
+
+* Verifique a versão do Docker Compose (existem duas formas comuns):
+
+  ```bash
+  docker compose version      # Compose v2 (recomendado)
+  docker-compose --version    # Compose v1 (antigo)
+  ```
+
+* Garanta que as portas 5000 e 5001 não estejam em uso por outro processo.
+
+Rodando tudo com o nosso docker-compose (build + up):
+
+```bash
+# na raiz do projeto (onde está o docker-compose.yml)
+docker-compose up --build
+# ou, se usar Compose v2:
+docker compose up --build
+```
+
+* Para rodar em modo destacado (background):
+
+  ```bash
+  docker-compose up --build -d
+  # ou:
+  docker compose up --build -d
+  ```
+
+* Acompanhar logs:
+
+  ```bash
+  docker-compose logs -f
+  docker-compose logs -f api
+  docker-compose logs -f sqlserver
+  ```
+
+* Parar e remover containers:
+
+  ```bash
+  docker-compose down
+  ```
+
+* Remover volumes ( ATENÇÃO: isso apaga dados persistidos ):
+
+  ```bash
+  docker-compose down -v
+  ```
+
+Dicas:
+
+* Se estiver no Windows com Docker Desktop, confirme que o Docker Desktop está aberto e o WSL2 (quando aplicável) habilitado.
+
+* O container do SQL Server pode demorar a ficar disponível — por isso o compose aqui foi pensado para usar healthchecks / scripts de espera (wait-for) para que a API aplique migrations/seed somente quando o banco estiver pronto.
+
+* Caso ocorra erro no start do SQL Server, verifique os logs do container e a variável `SA_PASSWORD` (ela deve obedecer às regras de complexidade do SQL Server).
+
+---
+ 
+### Sistema Administrativo Escola (AdmSchoolApp)
 
 #### Visão geral
 
@@ -187,7 +256,7 @@ VALUES ('...', 'isaque.silva@fiap.com.br', 'isaque.silva@fiap.com.br', 0x<HEX_HE
 #### Execução de testes
 
 ```bash
-dotnet test ./tests/Api.UnitTests
+dotnet test ./Api.UnitTests
 ```
 
 #### Scaffolding do DbContext (a partir de DB existente)
